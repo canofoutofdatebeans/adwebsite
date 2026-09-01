@@ -170,6 +170,12 @@
     }
   });
 
+  /* ----- Random president portrait (mirrors the game's president creator) ----- */
+  var portrait = document.getElementById('presidentPortrait');
+  if (portrait && Math.random() < 0.5) {
+    portrait.src = 'assets/portrait-female.jpg';
+  }
+
   /* ----- Footer year ----- */
   var yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
