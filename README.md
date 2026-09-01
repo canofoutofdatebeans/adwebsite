@@ -13,6 +13,8 @@ python -m http.server 8462
 
 Deployed via GitHub Pages from the repo root. Art assets are exported from the game project.
 
-Things to update when the game ships to stores: the iOS and Android cards in the
-Download section of `index.html` are placeholder buttons with satirical "in review"
-toasts. Swap each `<button data-toast=...>` for an `<a href>` to the real store listing.
+The game is going paid (desktop via Steam), so the whole site runs a "coming soon"
+treatment: every download card in `index.html` is a placeholder `<button data-toast=...>`
+with a satirical toast. When a real store page exists (Steam, App Store, Google Play),
+swap the matching button for an `<a href>` to the listing. The hero's gold button
+currently anchors to #download; point it at Steam when the wishlist page is up.
