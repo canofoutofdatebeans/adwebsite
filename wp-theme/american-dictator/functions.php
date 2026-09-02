@@ -8,7 +8,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'AD_VERSION', '1.0.0' );
+define( 'AD_VERSION', '1.1.0' );
+
+// SEO: titles, meta, Open Graph, schema (targets "American Dictator").
+require_once get_template_directory() . '/inc/seo.php';
 
 /* ---------------------------------------------------------------------------
  * Theme setup
@@ -62,6 +65,23 @@ function ad_img( $key, $default_file ) {
 function ad_blog_url() {
 	$pid = (int) get_option( 'page_for_posts' );
 	return $pid ? get_permalink( $pid ) : home_url( '/' );
+}
+
+/** True once WooCommerce has at least one published product. */
+function ad_has_products() {
+	if ( ! function_exists( 'wc_get_page_id' ) ) {
+		return false;
+	}
+	$counts = wp_count_posts( 'product' );
+	return $counts && ! empty( $counts->publish );
+}
+
+/** Where "Patriot Store" points: the real shop once it has products, else the fun section. */
+function ad_store_url() {
+	if ( ad_has_products() && wc_get_page_id( 'shop' ) > 0 ) {
+		return get_permalink( wc_get_page_id( 'shop' ) );
+	}
+	return home_url( '/#store' );
 }
 
 /** Turn a newline-separated textarea into an array of trimmed lines. */

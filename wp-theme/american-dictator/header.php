@@ -4,9 +4,7 @@
  *
  * @package American_Dictator
  */
-$ad_store_url = ( function_exists( 'wc_get_page_id' ) && wc_get_page_id( 'shop' ) > 0 )
-	? get_permalink( wc_get_page_id( 'shop' ) )
-	: home_url( '/#store' );
+$ad_store_url = ad_store_url();
 ?><!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
