@@ -8,7 +8,7 @@ get_header();
 ?>
 <main class="single-article">
 	<div class="single-inner">
-		<a class="back-to-office" href="<?php echo esc_url( home_url( '/' ) ); ?>">&larr; Return to the Office</a>
+		<a class="back-to-office" href="<?php echo esc_url( ad_localize_url( home_url( '/' ) ) ); ?>">&larr; <?php echo esc_html( ad_t( 'blog.back' ) ); ?></a>
 		<?php
 		while ( have_posts() ) :
 			the_post();

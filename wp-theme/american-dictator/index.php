@@ -9,18 +9,18 @@ get_header();
 ?>
 <main class="paper">
 	<div class="paper-inner">
-		<a class="back-to-office" href="<?php echo esc_url( home_url( '/' ) ); ?>">&larr; Return to the Office</a>
+		<a class="back-to-office" href="<?php echo esc_url( ad_localize_url( home_url( '/' ) ) ); ?>">&larr; <?php echo esc_html( ad_t( 'blog.back' ) ); ?></a>
 		<header class="page-masthead">
 			<div class="scream-title"><?php
 				if ( is_search() ) {
-					echo 'Search: ' . esc_html( get_search_query() );
+					echo esc_html( ad_t( 'search.prefix' ) ) . ' ' . esc_html( get_search_query() );
 				} elseif ( is_archive() ) {
 					the_archive_title();
 				} else {
-					echo 'The National Scream';
+					echo esc_html( ad_t( 'scream.h' ) );
 				}
 			?></div>
-			<p class="tagline">The Paper of Record, Corrected</p>
+			<p class="tagline"><?php echo esc_html( ad_t( 'scream.rule' ) ); ?></p>
 		</header>
 
 		<?php if ( have_posts() ) : ?>
@@ -41,8 +41,8 @@ get_header();
 			</div>
 		<?php else : ?>
 			<article class="post-item">
-				<h2>Nothing on file.</h2>
-				<div class="excerpt">The record you seek has been reclassified, redacted, or was never permitted to exist. The Administration thanks you for your curiosity and has noted it.</div>
+				<h2><?php echo esc_html( ad_t( 'archive.empty.h' ) ); ?></h2>
+				<div class="excerpt"><?php echo esc_html( ad_t( 'archive.empty.p' ) ); ?></div>
 			</article>
 		<?php endif; ?>
 	</div>

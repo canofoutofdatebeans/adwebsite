@@ -8,7 +8,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'AD_VERSION', '1.1.0' );
+define( 'AD_VERSION', '1.2.0' );
+
+// Translations (hand-crafted, English fallback) + the language switcher.
+require_once get_template_directory() . '/inc/i18n.php';
 
 // SEO: titles, meta, Open Graph, schema (targets "American Dictator").
 require_once get_template_directory() . '/inc/seo.php';

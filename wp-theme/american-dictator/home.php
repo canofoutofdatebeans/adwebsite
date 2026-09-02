@@ -8,10 +8,10 @@ get_header();
 ?>
 <main class="paper">
 	<div class="paper-inner">
-		<a class="back-to-office" href="<?php echo esc_url( home_url( '/' ) ); ?>">&larr; Return to the Office</a>
+		<a class="back-to-office" href="<?php echo esc_url( ad_localize_url( home_url( '/' ) ) ); ?>">&larr; <?php echo esc_html( ad_t( 'blog.back' ) ); ?></a>
 		<header class="page-masthead">
-			<div class="scream-title">The National Scream</div>
-			<p class="tagline">The Paper of Record, Corrected &middot; Est. Whenever</p>
+			<div class="scream-title"><?php echo esc_html( ad_t( 'scream.h' ) ); ?></div>
+			<p class="tagline"><?php echo esc_html( ad_t( 'scream.tagline' ) ); ?></p>
 		</header>
 
 		<?php if ( have_posts() ) : ?>
@@ -22,19 +22,19 @@ get_header();
 				?>
 				<article class="post-item">
 					<?php if ( $cats ) : ?><span class="cat"><?php echo esc_html( $cats[0]->name ); ?></span><?php endif; ?>
-					<h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
-					<div class="meta">By <?php the_author(); ?> &middot; <?php echo esc_html( get_the_date() ); ?></div>
+					<h2><a href="<?php echo esc_url( ad_localize_url( get_permalink() ) ); ?>"><?php the_title(); ?></a></h2>
+					<div class="meta"><?php echo esc_html( ad_t( 'scream.by' ) ); ?> <?php the_author(); ?> &middot; <?php echo esc_html( get_the_date() ); ?></div>
 					<div class="excerpt"><?php the_excerpt(); ?></div>
 				</article>
 			<?php endwhile; ?>
 
 			<div class="pagination">
-				<?php echo paginate_links( array( 'prev_text' => '&larr; Newer', 'next_text' => 'Older &rarr;' ) ); ?>
+				<?php echo paginate_links( array( 'prev_text' => '&larr;', 'next_text' => '&rarr;' ) ); ?>
 			</div>
 		<?php else : ?>
 			<article class="post-item">
-				<h2>No news is good news.</h2>
-				<div class="excerpt">The Scream has nothing to report, which the Administration considers its finest edition yet.</div>
+				<h2><?php echo esc_html( ad_t( 'scream.empty.h' ) ); ?></h2>
+				<div class="excerpt"><?php echo esc_html( ad_t( 'scream.empty.p' ) ); ?></div>
 			</article>
 		<?php endif; ?>
 	</div>

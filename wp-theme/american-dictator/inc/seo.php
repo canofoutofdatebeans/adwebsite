@@ -13,9 +13,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 const AD_SITE_NAME = 'American Dictator';
 const AD_KEYWORDS  = 'American Dictator, American Dictator game, dictator simulator, political satire game, political survival game, satirical strategy game, Patriot Party, presidency game';
 
-/** Front-page marketing description, reused for the homepage and as a fallback. */
+/** Front-page marketing description (localised), reused for homepage + fallback. */
 function ad_default_description() {
-	return 'American Dictator is a satirical political survival game. You get one four-year term to turn a republic into a dictatorship. Coming soon.';
+	return function_exists( 'ad_t' ) ? ad_t( 'seo.description' ) : 'American Dictator is a satirical political survival game. You get one four-year term to turn a republic into a dictatorship. Coming soon.';
+}
+
+/** WordPress locale string for a language code, for og:locale. */
+function ad_og_locale() {
+	$map = array(
+		'en' => 'en_US', 'zh' => 'zh_CN', 'es' => 'es_ES', 'fr' => 'fr_FR',
+		'de' => 'de_DE', 'pt' => 'pt_PT', 'it' => 'it_IT', 'nl' => 'nl_NL',
+		'pl' => 'pl_PL', 'cs' => 'cs_CZ', 'ru' => 'ru_RU',
+	);
+	$l = function_exists( 'ad_lang' ) ? ad_lang() : 'en';
+	return isset( $map[ $l ] ) ? $map[ $l ] : 'en_US';
 }
 
 /** Best description for the current view (trimmed to ~160 chars). */
@@ -53,6 +64,15 @@ function ad_canonical() {
 	}
 	$link = home_url( add_query_arg( array(), $GLOBALS['wp']->request ) );
 	return $link ? trailingslashit( $link ) : home_url( '/' );
+}
+
+/** The canonical URL, carrying the active language so each language self-canonicalises. */
+function ad_canonical_localized() {
+	$base = ad_canonical();
+	if ( function_exists( 'ad_lang' ) && 'en' !== ad_lang() ) {
+		$base = add_query_arg( 'lang', ad_lang(), $base );
+	}
+	return $base;
 }
 
 /** The share/OG image (post thumbnail if present, else the theme default). */
@@ -98,7 +118,7 @@ add_filter( 'document_title_parts', function ( $parts ) {
  * ------------------------------------------------------------------------- */
 function ad_head_meta() {
 	$desc  = ad_meta_description();
-	$url   = ad_canonical();
+	$url   = ad_canonical_localized();
 	$img   = ad_share_image();
 	$theme = get_template_directory_uri();
 	$type  = ( is_singular() && ! is_front_page() && ! is_page() ) ? 'article' : 'website';
@@ -107,6 +127,14 @@ function ad_head_meta() {
 	printf( '<meta name="keywords" content="%s">' . "\n", esc_attr( AD_KEYWORDS ) );
 	printf( '<meta name="robots" content="%s">' . "\n", 'index, follow, max-image-preview:large, max-snippet:-1' );
 	printf( '<link rel="canonical" href="%s">' . "\n", esc_url( $url ) );
+
+	// hreflang alternates for every language (plus x-default).
+	if ( function_exists( 'ad_languages' ) && function_exists( 'ad_url_in_lang' ) ) {
+		foreach ( ad_languages() as $code => $meta ) {
+			printf( '<link rel="alternate" hreflang="%s" href="%s">' . "\n", esc_attr( $meta['hreflang'] ), esc_url( ad_url_in_lang( $code ) ) );
+		}
+		printf( '<link rel="alternate" hreflang="x-default" href="%s">' . "\n", esc_url( ad_url_in_lang( 'en' ) ) );
+	}
 
 	// Favicon / touch icon from the theme seal.
 	printf( '<link rel="icon" type="image/png" href="%s">' . "\n", esc_url( $theme . '/assets/seal-192.png' ) );
@@ -121,7 +149,7 @@ function ad_head_meta() {
 	printf( '<meta property="og:image" content="%s">' . "\n", esc_url( $img ) );
 	printf( '<meta property="og:image:width" content="%s">' . "\n", '1200' );
 	printf( '<meta property="og:image:height" content="%s">' . "\n", '630' );
-	printf( '<meta property="og:locale" content="%s">' . "\n", 'en_US' );
+	printf( '<meta property="og:locale" content="%s">' . "\n", esc_attr( ad_og_locale() ) );
 
 	// Twitter.
 	printf( '<meta name="twitter:card" content="%s">' . "\n", 'summary_large_image' );
