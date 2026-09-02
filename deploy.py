@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Deploy the American Dictator site to Krystal over FTP (FTPS preferred).
 
-Reads credentials from .ftp-credentials (git-ignored). Uploads only the site
-files (index.html + css/ js/ assets/), never the repo plumbing or secrets.
+Reads credentials from .ftp-credentials (git-ignored). Two targets:
 
-Usage:
-    python deploy.py            # upload changed/new files
-    python deploy.py --all      # re-upload everything
-    python deploy.py --dry-run  # show what would upload, connect only
+    python deploy.py --theme      # upload the WordPress theme to
+                                  #   <web-root>/wp-content/themes/american-dictator/
+    python deploy.py              # upload the static site to the web root
+
+Flags (either target):
+    --all       re-upload everything (default already uploads everything)
+    --dry-run   connect and list only, upload nothing
 """
 import ftplib
 import os
@@ -17,9 +19,13 @@ import sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 CRED = os.path.join(ROOT, ".ftp-credentials")
 
-# What actually makes up the website. Everything else stays local.
+# Static-site payload (web root).
 INCLUDE_FILES = ["index.html", ".nojekyll"]
 INCLUDE_DIRS = ["css", "js", "assets"]
+
+# WordPress theme payload.
+THEME_LOCAL = os.path.join(ROOT, "wp-theme", "american-dictator")
+THEME_REMOTE_SUB = "wp-content/themes/american-dictator"
 
 
 def load_creds():
@@ -42,8 +48,8 @@ def load_creds():
     return c
 
 
-def gather_local():
-    """Return list of (local_path, remote_relative_path)."""
+def gather_static():
+    """Static-site payload: (local_path, remote_relative_path)."""
     items = []
     for f in INCLUDE_FILES:
         p = os.path.join(ROOT, f)
@@ -56,6 +62,19 @@ def gather_local():
                 lp = os.path.join(dirpath, name)
                 rel = os.path.relpath(lp, ROOT).replace("\\", "/")
                 items.append((lp, rel))
+    return items
+
+
+def gather_tree(local_root):
+    """Every file under local_root, rel paths relative to that root."""
+    if not os.path.isdir(local_root):
+        sys.exit(f"Theme folder not found: {local_root}")
+    items = []
+    for dirpath, _, files in os.walk(local_root):
+        for name in files:
+            lp = os.path.join(dirpath, name)
+            rel = os.path.relpath(lp, local_root).replace("\\", "/")
+            items.append((lp, rel))
     return items
 
 
@@ -99,19 +118,30 @@ def ensure_dir(ftp, remote_dir):
 
 def main():
     dry = "--dry-run" in sys.argv
-    force_all = "--all" in sys.argv
+    theme_mode = "--theme" in sys.argv
     c = load_creds()
-    items = gather_local()
+
+    web_root = c["FTP_REMOTE_DIR"].rstrip("/")  # "" when the account is chrooted to "/"
+    if theme_mode:
+        items = gather_tree(THEME_LOCAL)
+        base = (web_root + "/" + THEME_REMOTE_SUB)
+        label = "WordPress theme"
+    else:
+        items = gather_static()
+        base = web_root or "/"
+        label = "static site"
+    if not base.startswith("/"):
+        base = "/" + base
+
     total_kb = sum(os.path.getsize(lp) for lp, _ in items) / 1024
-    print(f"{len(items)} files to deploy ({total_kb:.0f} KB) -> {c['FTP_HOST']}:{c['FTP_REMOTE_DIR']}")
+    print(f"Deploying {label}: {len(items)} files ({total_kb:.0f} KB) -> {c['FTP_HOST']}:{base}")
     if dry:
         for _, rel in sorted(items):
             print("  would upload", rel)
 
     ftp = connect(c)
-    base = c["FTP_REMOTE_DIR"].rstrip("/") or "/"
     ensure_dir(ftp, base)
-    print("Remote web root contents:", ", ".join(ftp.nlst()[:12]) or "(empty)")
+    print("Remote target contents:", ", ".join(ftp.nlst()[:12]) or "(empty)")
     if dry:
         ftp.quit()
         print("Dry run complete. No files were uploaded.")
@@ -135,7 +165,12 @@ def main():
             ftp.storbinary("STOR " + filename, fh)
         print("  uploaded", rel)
     ftp.quit()
-    print(f"\nDone. {len(items)} files live. Visit http://{c['FTP_HOST'].replace('ftp.', '')}/")
+    site = c["FTP_HOST"].replace("ftp.", "")
+    if theme_mode:
+        print(f"\nDone. Theme uploaded ({len(items)} files). Now activate it in WordPress:")
+        print(f"  https://{site}/wp-admin/  ->  Appearance -> Themes -> American Dictator -> Activate")
+    else:
+        print(f"\nDone. {len(items)} files live. Visit http://{site}/")
 
 
 if __name__ == "__main__":
